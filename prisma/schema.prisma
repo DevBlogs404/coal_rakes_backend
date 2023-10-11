@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  firstName  String
+  lastName   String
+  email      String   @unique
+  password   String
+  role       String
+  phone      String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Siding {
+  id                Int                @id @default(autoincrement())
+  name              String
+  location          Location           @relation(fields: [locationId], references: [id])
+  locationId        Int
+  coalStock         Int // Represents the current coal stock at the siding
+  capacity          Int // Represents the maximum capacity of the siding
+  isActive          Boolean            @default(true) // Indicates if the siding is active
+  rakes             RailwayRake[] // One siding can have multiple rakes
+  allocationRecords AllocationRecord[]
+}
+
+model Location {
+  id          Int           @id @default(autoincrement())
+  latitude    Float
+  longitude   Float
+  address     String
+  Siding      Siding[]
+  RailwayRake RailwayRake[]
+}
+
+model RailwayRake {
+  id                Int                @id @default(autoincrement())
+  number            String             @unique
+  location          Location           @relation(fields: [locationId], references: [id]) // Represents the current location of the railway rake
+  locationId        Int
+  capacity          Int // Represents the maximum capacity of the rake
+  isActive          Boolean            @default(true) // Indicates if the rake is active
+  siding            Siding?            @relation(fields: [sidingId], references: [id])
+  sidingId          Int? // Foreign key to track allocation
+  allocationRecords AllocationRecord[]
+}
+
+model AllocationRecord {
+  id               Int         @id @default(autoincrement())
+  siding           Siding      @relation(fields: [sidingId], references: [id])
+  sidingId         Int
+  railwayRake      RailwayRake @relation(fields: [rakeId], references: [id])
+  rakeId           Int
+  allocationTime   DateTime    @default(now())
+  deallocationTime DateTime?
+  coalQuantity     Int // Represents the quantity of coal allocated
+}
