@@ -98,24 +98,24 @@ async function LogInController(req, res) {
     .setExpirationTime("24h")
     .sign(secret);
 
-  res.cookie("auth_cookie", token, {
-    withCredentials: true,
-    secure: true,
-    httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000,
-    sameSite: "lax",
-  });
+  // res.cookie("auth_cookie", token, {
+  //   withCredentials: true,
+  //   secure: true,
+  //   httpOnly: true,
+  //   maxAge: 24 * 60 * 60 * 1000,
+  //   sameSite: "lax",
+  // });
 
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
     message: "User Login Successful",
+    token,
   });
 }
 
 async function me(req, res) {
   const authCookie = req.cookies.auth_cookie;
   const data = jwt.verify(authCookie, process.env.JWT_SECRET);
-  console.log(data);
   if (data) {
     const user = await prisma.user.findUnique({
       where: {
